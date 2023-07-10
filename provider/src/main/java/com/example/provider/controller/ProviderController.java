@@ -11,5 +11,9 @@ public class ProviderController {
     @Autowired
     private CuratorFramework curatorFramework;
 
+    @GetMapping("/test")
+    public void test() throws Exception {
+        curatorFramework.create().creatingParentsIfNeeded().forPath("/test");
+    }
 }
 
