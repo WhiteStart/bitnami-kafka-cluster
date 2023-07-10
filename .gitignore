@@ -1,0 +1,5 @@
+*.log
+provider/src/main/resources/**/*.yml
+provider/target/**
+consumer/src/main/resources/**/*.yml
+consumer/target/**
