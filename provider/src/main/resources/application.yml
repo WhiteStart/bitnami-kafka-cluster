@@ -1,0 +1,34 @@
+##服务器端口号
+server:
+  port: 4002
+
+spring:
+  application:
+    name: provider
+  cloud:
+    zookeeper:
+      connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+    service-registry:
+      auto-registration:
+        listener-order: org.springframework.cloud.zookeeper.serviceregistry.ServiceInstanceListener
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: { your_email }
+    password: { email_password 这里使用的是qq邮箱，需要注册SMTP密码，其他的邮箱应该也是类似 }
+    properties:
+      mail:
+        smtp:
+          from: { your_email }
+
+properties:
+  connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+    sessionTimeout: 5000
+    connectionTimeout: 5000
+    registrationPath: /services
+    to: { 期望发送的地址 }
+    username: jcxu
+    password: jcxu
+
+mail:
+  from: { your_email }
