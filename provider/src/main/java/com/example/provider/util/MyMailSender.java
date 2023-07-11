@@ -1,28 +1,31 @@
-package com.example.provider.config;
+package com.example.provider.util;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-@Configuration
-public class MailConfig {
-    private final JavaMailSender mailSender;
-    private final PropertiesConfig propertiesConfig;
+@Component
+public class MyMailSender {
 
-    public MailConfig(JavaMailSender mailSender, PropertiesConfig propertiesConfig) {
+    private final JavaMailSender mailSender;
+
+    public MyMailSender(JavaMailSender mailSender) {
         this.mailSender = mailSender;
-        this.propertiesConfig = propertiesConfig;
     }
 
-    protected void sendEmail(String to, String subject, String content) {
+    @Value("${mail.from}")
+    private String from;
+
+    public void sendEmail(String to, String subject, String content) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(to);
-            helper.setFrom(propertiesConfig.getFrom()); // 设置邮件发送者地址
+            helper.setFrom(from); // 设置邮件发送者地址
             helper.setSubject(subject);
             helper.setText(content);
 
