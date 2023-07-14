@@ -1,6 +1,6 @@
 ##服务器端口号
 server:
-  port: 4002
+  port: 4001
 
 spring:
   application:
@@ -8,7 +8,11 @@ spring:
   cloud:
     zookeeper:
       connect-string: 127.0.0.1:2181
-  #      connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+      enabled: true
+      properties:
+        authProvider:1: org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+        requireClientAuthScheme: sasl
+        jaasLoginRenew: 3600000
 
 #  kafka:
 #    bootstrap-servers:
