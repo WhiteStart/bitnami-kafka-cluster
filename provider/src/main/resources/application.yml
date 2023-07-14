@@ -1,34 +1,26 @@
-##服务器端口号
 server:
-  port: 4002
+  port: 8888
 
 spring:
   application:
     name: provider
   cloud:
     zookeeper:
-      connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-    service-registry:
-      auto-registration:
-        listener-order: org.springframework.cloud.zookeeper.serviceregistry.ServiceInstanceListener
-  mail:
-    host: smtp.qq.com
-    port: 587
-    username: { your_email }
-    password: { email_password 这里使用的是qq邮箱，需要注册SMTP密码，其他的邮箱应该也是类似 }
-    properties:
-      mail:
-        smtp:
-          from: { your_email }
+      connect-string: 127.0.0.1:2181
+      enabled: true
+      properties:
+        authProvider.1: org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+        requireClientAuthScheme: sasl
+        jaasLoginRenew: 3600000
+        authProvider.1.class: org.apache.zookeeper.server.auth.DigestAuthenticationProvider
+        authProvider.1.digest.user: user:password
 
 properties:
-  connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-    sessionTimeout: 5000
-    connectionTimeout: 5000
-    registrationPath: /services
-    to: { 期望发送的地址 }
-    username: jcxu
-    password: jcxu
-
-mail:
-  from: { your_email }
+  #  connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+  connectString: 127.0.0.1:2181
+  sessionTimeout: 5000
+  connectionTimeout: 5000
+  registrationPath: /services2
+  to: 525599675@qq.com
+  username: user
+  password: password
