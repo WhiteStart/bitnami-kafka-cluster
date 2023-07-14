@@ -20,9 +20,6 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -30,6 +27,7 @@ public class ZookeeperConfig {
 
     private CuratorFramework curatorFramework;
 
+    // todo 2023-07-14 加入了这部分代码以后，此微服务的注册在provider感知不到了，似乎需要复制一下listener等方法
     @Bean
     public CuratorFramework curatorFramework(){
         curatorFramework = CuratorFrameworkFactory.builder()

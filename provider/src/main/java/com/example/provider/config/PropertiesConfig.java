@@ -14,7 +14,7 @@ public class PropertiesConfig {
     private String registrationPath;
     private String to;
     private Integer sessionTimeout;
-    private String name;
+    private String username;
     private String password;
     //    private List<AuthInfoConfig> configs;
 

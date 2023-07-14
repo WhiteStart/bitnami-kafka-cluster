@@ -19,7 +19,7 @@ public class ProviderController {
 
     @GetMapping("/send")
     public void testSend(){
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10000; i++) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("datekey", 20210610);
             map.put("userid", i);
