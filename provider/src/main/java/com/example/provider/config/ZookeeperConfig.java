@@ -37,24 +37,24 @@ public class ZookeeperConfig {
 
     private CuratorFramework curatorFramework;
     private CuratorCache curatorCache;
-    private List<ACL> list;
-    private String digestString;
+//    private List<ACL> list;
+//    private String digestString;
 
-    @PostConstruct
-    public void setAclList() throws NoSuchAlgorithmException {
-        list = new ArrayList<>();
-        digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
-        // 将明文账户密码通过api生成密文
-        String digest = DigestAuthenticationProvider.generateDigest(digestString);
-        ACL acl = new ACL(ZooDefs.Perms.ALL, new Id("digest", digest));
-        list.add(acl);
-    }
+//    @PostConstruct
+//    public void setAclList() throws NoSuchAlgorithmException {
+//        list = new ArrayList<>();
+//        digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
+//        // 将明文账户密码通过api生成密文
+//        String digest = DigestAuthenticationProvider.generateDigest(digestString);
+//        ACL acl = new ACL(ZooDefs.Perms.ALL, new Id("digest", digest));
+//        list.add(acl);
+//    }
 
     @Bean
     public CuratorFramework curatorFramework(){
         curatorFramework = CuratorFrameworkFactory.builder()
 //                 预设登录时的账户密码
-                .authorization("digest", digestString.getBytes(StandardCharsets.UTF_8))
+//                .authorization("digest", digestString.getBytes(StandardCharsets.UTF_8))
 //                 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
                 .connectString(propertiesConfig.getConnectString())
                 .sessionTimeoutMs(propertiesConfig.getSessionTimeout()) // 会话超时时间
@@ -77,7 +77,7 @@ public class ZookeeperConfig {
                         .creatingParentsIfNeeded()
                         .withMode(CreateMode.PERSISTENT)
                         // 根据预设的账户密码登录，保证只有该账户可以操作相关节点
-                        .withACL(list, true)
+//                        .withACL(list, true)
                         .forPath(registrationPath);
             } catch (Exception e) {
                 // 处理异常

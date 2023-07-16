@@ -7,7 +7,7 @@ spring:
     name: provider
   cloud:
     zookeeper:
-      connect-string: 127.0.0.1:2181
+      connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
       enabled: true
       properties:
         authProvider:1: org.apache.zookeeper.server.auth.SASLAuthenticationProvider
@@ -15,7 +15,7 @@ spring:
         jaasLoginRenew: 3600000
 
   kafka:
-    bootstrap-servers: 127.0.0.1:9094
+    bootstrap-servers: 127.0.0.1:9094,127.0.0.1:9097,127.0.0.1:9100
     properties:
       security:
         protocol: SASL_PLAINTEXT
@@ -45,6 +45,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
+
   mail:
     host: smtp.qq.com
     port: 587
@@ -59,10 +60,10 @@ properties:
   connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
     sessionTimeout: 5000
     connectionTimeout: 5000
-#    registrationPath: /services
+    registrationPath: /services
     to: { 期望发送的地址 }
-    username: jcxu
-    password: jcxu
+    username: user
+    password: password
 
 mail:
   from: { your_email }
