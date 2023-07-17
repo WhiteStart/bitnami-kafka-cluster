@@ -1,7 +1,7 @@
 version: '3'
 
 networks:
-  shared_network:
+  zookeeper-kafka:
     external: true
 
 services:
@@ -9,7 +9,7 @@ services:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper1
     ports:
-      - "2181:2181"
+      - '2181:2181'
     # volumes:
     #   - "zookeeper1_data:/bitnami"
     environment:
@@ -21,17 +21,17 @@ services:
       - ZOO_CLIENT_PASSWORD=password
       - ZOO_SERVER_ID=1
     networks:
-      - shared_network
+      - zookeeper-kafka
 
   zookeeper2:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper2
     ports:
-      - "2182:2181"
+      - '2182:2181'
     # volumes:
     #   - "zookeeper2_data:/bitnami"
     environment:
-      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888    
+      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
       - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=user
       - ZOO_SERVER_PASSWORDS=password
@@ -45,11 +45,11 @@ services:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper3
     ports:
-      - "2183:2181"
+      - '2183:2181'
     # volumes:
     #   - "zookeeper3_data:/bitnami"
     environment:
-      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888    
+      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
       - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=user
       - ZOO_SERVER_PASSWORDS=password
@@ -57,15 +57,15 @@ services:
       - ZOO_CLIENT_PASSWORD=password
       - ZOO_SERVER_ID=3
     networks:
-      - shared_network
+      - zookeeper-kafka
 
   kafka1:
     image: docker.io/bitnami/kafka:3.4
     container_name: kafka1
     ports:
-      - "9092:9092"
-      - "9093:9093"
-      - "9094:9094"
+      - '9092:9092'
+      - '9093:9093'
+      - '9094:9094'
     # volumes:
     #   - "kafka1_data:/bitnami"
     environment:
@@ -86,7 +86,7 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
     networks:
-      - shared_network
+      - zookeeper-kafka
     depends_on:
       - zookeeper1
       - zookeeper2
@@ -96,9 +96,9 @@ services:
     image: docker.io/bitnami/kafka:3.4
     container_name: kafka2
     ports:
-      - "9095:9092"
-      - "9096:9093"
-      - "9097:9094"
+      - '9095:9092'
+      - '9096:9093'
+      - '9097:9094'
     # volumes:
     #   - "kafka2_data:/bitnami"
     environment:
@@ -119,7 +119,7 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
     networks:
-      - shared_network
+      - zookeeper-kafka
     depends_on:
       - zookeeper1
       - zookeeper2
@@ -129,9 +129,9 @@ services:
     image: docker.io/bitnami/kafka:3.4
     container_name: kafka3
     ports:
-      - "9098:9092"
-      - "9099:9093"
-      - "9100:9094"
+      - '9098:9092'
+      - '9099:9093'
+      - '9100:9094'
     # volumes:
     #   - "kafka3_data:/bitnami"
     environment:
@@ -152,12 +152,11 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
     networks:
-      - shared_network
+      - zookeeper-kafka
     depends_on:
       - zookeeper1
       - zookeeper2
       - zookeeper3
-
 # volumes:
 #   zookeeper1_data:
 #     driver: local

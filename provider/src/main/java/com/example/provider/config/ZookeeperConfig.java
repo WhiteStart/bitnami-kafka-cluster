@@ -40,14 +40,11 @@ public class ZookeeperConfig {
 
     private CuratorFramework curatorFramework;
     private CuratorCache curatorCache;
-    private List<ACL> list;
-    private String digestString;
 
     @PostConstruct
     public void init() throws Exception {
-
-        list = new ArrayList<>();
-        digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
+        List<ACL> list = new ArrayList<>();
+        String digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
         // 将明文账户密码通过api生成密文
         String digest = DigestAuthenticationProvider.generateDigest(digestString);
         ACL acl = new ACL(ZooDefs.Perms.ALL, new Id("digest", digest));
@@ -72,6 +69,10 @@ public class ZookeeperConfig {
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3)) // 重试策略
                 .build();
         curatorFramework.start();
+
+//        if (curatorFramework.checkExists().forPath("/services") != null) {
+//            curatorFramework.delete().deletingChildrenIfNeeded().forPath("/services");
+//        }
 
         String registrationPath = propertiesConfig.getRegistrationPath(); // 要监听的ZooKeeper节点路径
         String to = propertiesConfig.getTo();
@@ -138,7 +139,6 @@ public class ZookeeperConfig {
 //                .sessionTimeoutMs(propertiesConfig.getSessionTimeout()) // 会话超时时间
 //                .connectionTimeoutMs(propertiesConfig.getConnectionTimeout()) // 连接超时时间
 //                .retryPolicy(new ExponentialBackoffRetry(1000, 3)) // 重试策略
-////                .namespace(propertiesConfig.getRegistrationPath())
 //                .build();
 //        curatorFramework.start();
 //
@@ -164,36 +164,6 @@ public class ZookeeperConfig {
 //        curatorCache.listenable().addListener(curatorCacheListener());
 //        curatorCache.start();
 //        return curatorCache;
-//    }
-//
-//    private CuratorCacheListener curatorCacheListener() {
-//        String to = propertiesConfig.getTo();
-//        return CuratorCacheListener.builder()
-//                .forInitialized(() -> {
-//                    log.info("-----初始化监听器");
-//                })
-//                .forChanges((pre, cur) -> {
-//                    String prePath = pre.getPath();
-//                    String curPath = cur.getPath();
-//                    log.info("-----更新节点,{}=>{}", prePath, curPath);
-//                    mailSender.sendEmail(to, "更新节点",
-//                            "旧节点:" + prePath + ",新节点:" + curPath);
-//                })
-//                .forCreates((node) -> {
-//                    String path = node.getPath();
-//                    log.info("-----创建节点,{}", path);
-//                    if (!"/services".equals(path)) {
-//                        mailSender.sendEmail(to, "创建节点", path);
-//                    }
-//                })
-//                .forDeletes((node) -> {
-//                    String path = node.getPath();
-//                    log.info("-----删除节点,{}", path);
-//                    if (!"/services".equals(path)) {
-//                        mailSender.sendEmail(to, "删除节点", path);
-//                    }
-//                })
-//                .build();
 //    }
 
     @PreDestroy

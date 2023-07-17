@@ -54,7 +54,7 @@ public class ZookeeperConfig {
                     }
                 })
 //                 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-                .connectString("zookeeper1:2181,zookeeper2:2182,zookeeper3:2183")
+                .connectString("47.96.65.118:2181,47.96.65.118:2182,47.96.65.118:2183")
                 .sessionTimeoutMs(5000) // 会话超时时间
                 .connectionTimeoutMs(5000) // 连接超时时间
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3)) // 重试策略
