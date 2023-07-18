@@ -11,6 +11,12 @@ services:
     container_name: knowstreaming-manager
     networks:
       - zookeeper-kafka
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     privileged: true
     restart: always
     depends_on:
@@ -39,14 +45,20 @@ services:
   #    extra_hosts:
   #      - "hostname:x.x.x.x"
   # 服务日志路径
-  #    volumes:
-  #      - /ks/manage/log:/logs
+#    volumes:
+#      - /ks/manage/log:/logs
 
   knowstreaming-ui:
     image: knowstreaming/knowstreaming-ui:0.7.0
     container_name: knowstreaming-ui
     networks:
       - zookeeper-kafka
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     restart: always
     ports:
       - '80:80'
@@ -62,6 +74,12 @@ services:
     container_name: elasticsearch-single
     networks:
       - zookeeper-kafka
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     restart: always
     expose:
       - 9200
@@ -76,8 +94,8 @@ services:
       # 单节点配置，多节点集群参考 https://www.elastic.co/guide/en/elasticsearch/reference/7.6/docker.html#docker-compose-file
       discovery.type: single-node
       # 数据持久化路径
-  #    volumes:
-  #      - /ks/es/data:/usr/share/elasticsearch/data
+#    volumes:
+#      - /ks/es/data:/usr/share/elasticsearch/data
 
   # es初始化服务，与manager使用同一镜像
   # 首次启动es需初始化模版和索引,后续会自动创建
@@ -86,6 +104,12 @@ services:
     container_name: knowstreaming-init
     networks:
       - zookeeper-kafka
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     depends_on:
       - elasticsearch-single
     command:
@@ -101,6 +125,12 @@ services:
     container_name: knowstreaming-mysql
     networks:
       - zookeeper-kafka
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     restart: always
     environment:
       TZ: Asia/Shanghai

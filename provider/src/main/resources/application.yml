@@ -6,8 +6,8 @@ spring:
     name: provider
   cloud:
     zookeeper:
-#      connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-      connect-string: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
+      connect-string: 47.96.65.118:2181,47.96.65.118:2182,47.96.65.118:2183
+#      connect-string: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
       enabled: true
       properties:
         authProvider:1: org.apache.zookeeper.server.auth.SASLAuthenticationProvider
@@ -15,7 +15,8 @@ spring:
         jaasLoginRenew: 3600000
 
   kafka:
-    bootstrap-servers: 127.0.0.1:9094,127.0.0.1:9097,127.0.0.1:9100
+#    bootstrap-servers: 127.0.0.1:9094,127.0.0.1:9097,127.0.0.1:9100
+    bootstrap-servers: 47.96.65.118:9094,47.96.65.118:9097,47.96.65.118:9100
     properties:
       security:
         protocol: SASL_PLAINTEXT
@@ -49,14 +50,15 @@ spring:
     host: smtp.qq.com
     port: 587
     username: 525599675@qq.com
-    password: {your password}
+    password: vigclwxphjfcbigf
     properties:
       mail:
         smtp:
           from: 525599675@qq.com
 
 properties:
-  connectString: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
+  connectString: 47.96.65.118:2181,47.96.65.118:2182,47.96.65.118:2183
+#  connectString: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
 #  connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
 #  connectString: 127.0.0.1:2181
   sessionTimeout: 5000

@@ -8,82 +8,93 @@ networks:
 services:
   zookeeper1:
     image: docker.io/bitnami/zookeeper:3.8
-    container_name: zookeeper1
+    hostname: zookeeper1
     ports:
       - '2181:2181'
     volumes:
-      - 'zoo1conf:/conf'
-      - 'zoo1data:/data'
-      - 'zoo1datalog:/datalog'
+      - 'zookeeper1_data:/bitnami'
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     environment:
-      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181
-      ZOO_ENABLE_AUTH: yes
-      ZOO_SERVER_USERS: user
-      ZOO_SERVER_PASSWORDS: password
-      ZOO_CLIENT_USER: user
-      ZOO_CLIENT_PASSWORD: password
-      ZOO_SERVER_ID: 1
+      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+      - ZOO_ENABLE_AUTH=yes
+      - ZOO_SERVER_USERS=user
+      - ZOO_SERVER_PASSWORDS=password
+      - ZOO_CLIENT_USER=user
+      - ZOO_CLIENT_PASSWORD=password
+      - ZOO_SERVER_ID=1
+      - quorumListenOnAllIPs=true
     networks:
       - zookeeper-kafka
 
   zookeeper2:
     image: docker.io/bitnami/zookeeper:3.8
-    container_name: zookeeper2
+    hostname: zookeeper2
     ports:
       - '2182:2181'
     volumes:
-      - 'zoo2conf:/conf'
-      - 'zoo2data:/data'
-      - 'zoo2datalog:/datalog'
+      - 'zookeeper2_data:/bitnami'
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == node01
     environment:
-      ZOO_SERVERS: server.1=zookeeper1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zookeeper3:2888:3888;2181
-      ZOO_ENABLE_AUTH: yes
-      ZOO_SERVER_USERS: user
-      ZOO_SERVER_PASSWORDS: password
-      ZOO_CLIENT_USER: user
-      ZOO_CLIENT_PASSWORD: password
-      ZOO_SERVER_ID: 2
+      - ZOO_SERVERS=zookeeper1:2888:3888;0.0.0.0:2888:3888;zookeeper3:2888:3888
+      - ZOO_ENABLE_AUTH=yes
+      - ZOO_SERVER_USERS=user
+      - ZOO_SERVER_PASSWORDS=password
+      - ZOO_CLIENT_USER=user
+      - ZOO_CLIENT_PASSWORD=password
+      - ZOO_SERVER_ID=2
+      - quorumListenOnAllIPs=true
     networks:
       - zookeeper-kafka
-
+      
   zookeeper3:
     image: docker.io/bitnami/zookeeper:3.8
-    container_name: zookeeper3
+    hostname: zookeeper3
     ports:
       - '2183:2181'
     volumes:
-      - 'zoo2conf:/conf'
-      - 'zoo2data:/data'
-      - 'zoo2datalog:/datalog'
+      - 'zookeeper3_data:/bitnami'
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == node02
     environment:
-      ZOO_SERVERS: server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
-      ZOO_ENABLE_AUTH: yes
-      ZOO_SERVER_USERS: user
-      ZOO_SERVER_PASSWORDS: password
-      ZOO_CLIENT_USER: user
-      ZOO_CLIENT_PASSWORD: password
-      ZOO_SERVER_ID: 2
+      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;0.0.0.0:2888:3888
+      - ZOO_ENABLE_AUTH=yes
+      - ZOO_SERVER_USERS=user
+      - ZOO_SERVER_PASSWORDS=password
+      - ZOO_CLIENT_USER=user
+      - ZOO_CLIENT_PASSWORD=password
+      - ZOO_SERVER_ID=3
+      - quorumListenOnAllIPs=true
     networks:
       - zookeeper-kafka
 
   kafka1:
     image: docker.io/bitnami/kafka:3.4
-    container_name: kafka1
     ports:
       - '9092:9092'
       - '9093:9093'
       - '9094:9094'
-    # volumes:
-    #   - "kafka1_data:/bitnami"
+    volumes:
+      - 'kafka3_data:/bitnami'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == master
     environment:
       - BITNAMI_DEBUG=yes
       - KAFKA_ENABLE_KRAFT=no
@@ -110,13 +121,18 @@ services:
 
   kafka2:
     image: docker.io/bitnami/kafka:3.4
-    container_name: kafka2
     ports:
       - '9095:9092'
       - '9096:9093'
       - '9097:9094'
-    # volumes:
-    #   - "kafka2_data:/bitnami"
+    volumes:
+      - 'kafka2_data:/bitnami'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == node01
     environment:
       - BITNAMI_DEBUG=yes
       - KAFKA_ENABLE_KRAFT=no
@@ -143,13 +159,18 @@ services:
 
   kafka3:
     image: docker.io/bitnami/kafka:3.4
-    container_name: kafka3
     ports:
       - '9098:9092'
       - '9099:9093'
       - '9100:9094'
-    # volumes:
-    #   - "kafka3_data:/bitnami"
+    volumes:
+      - 'kafka3_data:/bitnami'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.role == node02
     environment:
       - BITNAMI_DEBUG=yes
       - KAFKA_ENABLE_KRAFT=no
@@ -173,16 +194,18 @@ services:
       - zookeeper1
       - zookeeper2
       - zookeeper3
-# volumes:
-#   zookeeper1_data:
-#     driver: local
-#   zookeeper2_data:
-#     driver: local
-#   zookeeper3_data:
-#     driver: local
-#   kafka1_data:
-#     driver: local
-#   kafka2_data:
-#     driver: local
-#   kafka3_data:
-#     driver: local
+
+volumes:
+  zookeeper1_data:
+    driver: local
+  zookeeper2_data:
+    driver: local
+  zookeeper3_data:
+    driver: local
+  kafka1_data:
+    driver: local
+  kafka2_data:
+    driver: local
+  kafka3_data:
+    driver: local
+
