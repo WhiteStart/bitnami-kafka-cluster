@@ -8,9 +8,9 @@ https://github.com/WhiteStart/zookeeper-kafka
 
 ```
 # 启动可视化界面
-docker-compose -f docker-compose-ui.yml up -d
+docker-compose -f docker-compose-ui-pseudo-cluster.yml up -d
 # 启动zk-kafka集群
-docker-compose -f docker-compose-pseudo-cluster-SASL.yml up -d
+docker-compose -f docker-compose-SASL-pseudo-cluster.yml up -d
 ```
 
 ![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_898989_QgZE7SlzBNBTJ6nZ_1689563873?w=1091&h=623&type=image/png)
