@@ -10,8 +10,8 @@ services:
     container_name: zookeeper1
     ports:
       - '2181:2181'
-    # volumes:
-    #   - "zookeeper1_data:/bitnami"
+    volumes:
+      - "zookeeper1_data:/bitnami"
     environment:
       - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
       - ZOO_ENABLE_AUTH=yes
@@ -28,8 +28,8 @@ services:
     container_name: zookeeper2
     ports:
       - '2182:2181'
-    # volumes:
-    #   - "zookeeper2_data:/bitnami"
+    volumes:
+      - "zookeeper2_data:/bitnami"
     environment:
       - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
       - ZOO_ENABLE_AUTH=yes
@@ -39,15 +39,15 @@ services:
       - ZOO_CLIENT_PASSWORD=password
       - ZOO_SERVER_ID=2
     networks:
-      - shared_network
+      - zookeeper-kafka
 
   zookeeper3:
     image: docker.io/bitnami/zookeeper:3.8
     container_name: zookeeper3
     ports:
       - '2183:2181'
-    # volumes:
-    #   - "zookeeper3_data:/bitnami"
+    volumes:
+      - "zookeeper3_data:/bitnami"
     environment:
       - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
       - ZOO_ENABLE_AUTH=yes
@@ -66,8 +66,8 @@ services:
       - '9092:9092'
       - '9093:9093'
       - '9094:9094'
-    # volumes:
-    #   - "kafka1_data:/bitnami"
+    volumes:
+      - "kafka1_data:/bitnami"
     environment:
       - BITNAMI_DEBUG=yes
       - KAFKA_ENABLE_KRAFT=no
@@ -82,7 +82,7 @@ services:
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka1:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka1:9092,EXTERNAL://47.96.65.118:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
     networks:
@@ -99,8 +99,8 @@ services:
       - '9095:9092'
       - '9096:9093'
       - '9097:9094'
-    # volumes:
-    #   - "kafka2_data:/bitnami"
+    volumes:
+      - "kafka2_data:/bitnami"
     environment:
       - BITNAMI_DEBUG=yes
       - KAFKA_ENABLE_KRAFT=no
@@ -115,7 +115,7 @@ services:
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka2:9092,EXTERNAL://localhost:9097
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka2:9092,EXTERNAL://47.96.65.118:9097
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
     networks:
@@ -132,8 +132,8 @@ services:
       - '9098:9092'
       - '9099:9093'
       - '9100:9094'
-    # volumes:
-    #   - "kafka3_data:/bitnami"
+    volumes:
+      - "kafka3_data:/bitnami"
     environment:
       - BITNAMI_DEBUG=yes
       - KAFKA_ENABLE_KRAFT=no
@@ -148,7 +148,7 @@ services:
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka3:9092,EXTERNAL://localhost:9100
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka3:9092,EXTERNAL://47.96.65.118:9100
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
     networks:
@@ -157,16 +157,17 @@ services:
       - zookeeper1
       - zookeeper2
       - zookeeper3
-# volumes:
-#   zookeeper1_data:
-#     driver: local
-#   zookeeper2_data:
-#     driver: local
-#   zookeeper3_data:
-#     driver: local
-#   kafka1_data:
-#     driver: local
-#   kafka2_data:
-#     driver: local
-#   kafka3_data:
-#     driver: local
+
+volumes:
+  zookeeper1_data:
+    driver: local
+  zookeeper2_data:
+    driver: local
+  zookeeper3_data:
+    driver: local
+  kafka1_data:
+    driver: local
+  kafka2_data:
+    driver: local
+  kafka3_data:
+    driver: local

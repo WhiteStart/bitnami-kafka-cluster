@@ -7,6 +7,7 @@ spring:
     name: provider
   cloud:
     zookeeper:
+      # ***** 本地测试的ip，如果是服务器部署则需要改为服务器的ip
       connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
       enabled: true
       properties:
@@ -15,6 +16,7 @@ spring:
         jaasLoginRenew: 3600000
 
   kafka:
+    # ***** 本地测试的ip，如果是服务器部署则需要改为服务器的ip
     bootstrap-servers: 127.0.0.1:9094,127.0.0.1:9097,127.0.0.1:9100
     properties:
       security:
@@ -57,6 +59,7 @@ spring:
           from: { your_email }
 
 properties:
+  # ***** 本地测试的ip，如果是服务器部署则需要改为服务器的ip
   connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
     sessionTimeout: 5000
     connectionTimeout: 5000
