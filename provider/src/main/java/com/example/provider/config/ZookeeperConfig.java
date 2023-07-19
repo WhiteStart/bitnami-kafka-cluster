@@ -1,10 +1,12 @@
 package com.example.provider.config;
 
 //import com.example.provider.util.MyMailSender;
+
 import com.example.provider.util.MyMailSender;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
@@ -21,6 +23,7 @@ import javax.annotation.PreDestroy;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -37,63 +40,47 @@ public class ZookeeperConfig {
 
     private CuratorFramework curatorFramework;
     private CuratorCache curatorCache;
-//    private List<ACL> list;
-//    private String digestString;
 
-//    @PostConstruct
-//    public void setAclList() throws NoSuchAlgorithmException {
-//        list = new ArrayList<>();
-//        digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
-//        // 将明文账户密码通过api生成密文
-//        String digest = DigestAuthenticationProvider.generateDigest(digestString);
-//        ACL acl = new ACL(ZooDefs.Perms.ALL, new Id("digest", digest));
-//        list.add(acl);
-//    }
+    @PostConstruct
+    public void init() throws Exception {
+        List<ACL> list = new ArrayList<>();
+        String digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
+        // 将明文账户密码通过api生成密文
+        String digest = DigestAuthenticationProvider.generateDigest(digestString);
+        ACL acl = new ACL(ZooDefs.Perms.ALL, new Id("digest", digest));
+        list.add(acl);
 
-    @Bean
-    public CuratorFramework curatorFramework(){
         curatorFramework = CuratorFrameworkFactory.builder()
-//                 预设登录时的账户密码
-//                .authorization("digest", digestString.getBytes(StandardCharsets.UTF_8))
-//                 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-                .connectString(propertiesConfig.getConnectString())
-                .sessionTimeoutMs(propertiesConfig.getSessionTimeout()) // 会话超时时间
-                .connectionTimeoutMs(propertiesConfig.getConnectionTimeout()) // 连接超时时间
+                .authorization("digest", digestString.getBytes(StandardCharsets.UTF_8))
+                .aclProvider(new ACLProvider() {
+                    @Override
+                    public List<ACL> getDefaultAcl() {
+                        return list;
+                    }
+
+                    @Override
+                    public List<ACL> getAclForPath(String s) {
+                        return list;
+                    }
+                })
+                .connectString(propertiesConfig.getConnectString()) // ZooKeeper服务器地址
+                .sessionTimeoutMs(5000) // 会话超时时间
+                .connectionTimeoutMs(5000) // 连接超时时间
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3)) // 重试策略
                 .build();
         curatorFramework.start();
-        return curatorFramework;
-    }
 
-    @Bean
-    public CuratorCache curatorCache(CuratorFramework curatorFramework) throws Exception {
+//        if (curatorFramework.checkExists().forPath("/services") != null) {
+//            curatorFramework.delete().deletingChildrenIfNeeded().forPath("/services");
+//        }
+
         String registrationPath = propertiesConfig.getRegistrationPath(); // 要监听的ZooKeeper节点路径
-        curatorCache = CuratorCache.build(curatorFramework, registrationPath);
-        Stat status = curatorFramework.checkExists().forPath(registrationPath);
-
-        if (status == null) {
-            try {
-                curatorFramework.create()
-                        .creatingParentsIfNeeded()
-                        .withMode(CreateMode.PERSISTENT)
-                        // 根据预设的账户密码登录，保证只有该账户可以操作相关节点
-//                        .withACL(list, true)
-                        .forPath(registrationPath);
-            } catch (Exception e) {
-                // 处理异常
-            }
-        }
-        return curatorCache;
-    }
-
-    @Bean
-    public CuratorCacheListener curatorCacheListener(CuratorCache curatorCache){
         String to = propertiesConfig.getTo();
+        curatorCache = CuratorCache.build(curatorFramework, registrationPath);
 
         CuratorCacheListener listener = CuratorCacheListener.builder()
                 .forInitialized(() -> {
-                    log.info("-----初始化节点");
-                    mailSender.sendEmail(to, "init", "初始化节点");
+                    log.info("-----初始化监听器");
                 })
                 .forChanges((pre, cur) -> {
                     String prePath = pre.getPath();
@@ -105,20 +92,79 @@ public class ZookeeperConfig {
                 .forCreates((node) -> {
                     String path = node.getPath();
                     log.info("-----创建节点,{}", path);
-                    if(!"/services".equals(path)){
+                    if (!"/services".equals(path)) {
                         mailSender.sendEmail(to, "创建节点", path);
                     }
                 })
                 .forDeletes((node) -> {
                     String path = node.getPath();
                     log.info("-----删除节点,{}", path);
-                    mailSender.sendEmail(to, "删除节点", path);
+                    if (!"/services".equals(path)) {
+                        mailSender.sendEmail(to, "删除节点", path);
+                    }
                 })
                 .build();
         curatorCache.listenable().addListener(listener);
         curatorCache.start();
-        return listener;
     }
+
+//    @PostConstruct
+//    public void setAclList() throws NoSuchAlgorithmException {
+//        list = new ArrayList<>();
+//        digestString = propertiesConfig.getUsername() + ":" + propertiesConfig.getPassword();
+//        // 将明文账户密码通过api生成密文
+//        String digest = DigestAuthenticationProvider.generateDigest(digestString);
+//        ACL acl = new ACL(ZooDefs.Perms.ALL, new Id("digest", digest));
+//        list.add(acl);
+//    }
+//
+//    @Bean
+//    public CuratorFramework curatorFramework() throws Exception {
+//        curatorFramework = CuratorFrameworkFactory.builder()
+////                 预设登录时的账户密码
+//                .authorization("digest", digestString.getBytes(StandardCharsets.UTF_8))
+//                .aclProvider(new ACLProvider() {
+//                    @Override
+//                    public List<ACL> getDefaultAcl() {
+//                        return list;
+//                    }
+//
+//                    @Override
+//                    public List<ACL> getAclForPath(String s) {
+//                        return list;
+//                    }
+//                })
+////              // 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+//                .connectString(propertiesConfig.getConnectString())
+//                .sessionTimeoutMs(propertiesConfig.getSessionTimeout()) // 会话超时时间
+//                .connectionTimeoutMs(propertiesConfig.getConnectionTimeout()) // 连接超时时间
+//                .retryPolicy(new ExponentialBackoffRetry(1000, 3)) // 重试策略
+//                .build();
+//        curatorFramework.start();
+//
+//        if(curatorFramework.checkExists().forPath("/services") != null) {
+//            curatorFramework.delete().deletingChildrenIfNeeded().forPath("/services");
+//        }
+//
+//        return curatorFramework;
+//    }
+//
+//    @Bean
+//    public CuratorCache curatorCache() {
+//        curatorCache = CuratorCache.build(curatorFramework,
+//                propertiesConfig.getRegistrationPath());
+//
+////        CuratorCacheListener listener = CuratorCacheListener.builder()
+////                .forTreeCache(curatorFramework, (client, event) -> {
+////                    System.out.println("++++++" + event);
+////                })
+////                .build();
+//
+////        curatorCache.listenable().addListener(listener);
+//        curatorCache.listenable().addListener(curatorCacheListener());
+//        curatorCache.start();
+//        return curatorCache;
+//    }
 
     @PreDestroy
     public void cleanUp() {

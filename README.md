@@ -1,150 +1,120 @@
-# **zookeeper**
+## 1、快速部署zk-kafka伪集群
 
-## 1. 概念
+clone示例项目dev分支【目前代码属于可运行阶段，部分还需要优化】
 
- ● ZooKeeper是一个树形目录服务，每个节点称为ZNode，保存自己的数据和节点信息
+https://github.com/WhiteStart/zookeeper-kafka
 
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_445520_kWKKZm5o3gvmVN2Z_1688542722?w=250&h=139&type=image/png)
-
-节点分为四类：
-
-- 持久化节点
-
-- 临时节点
-  -  -e
-
-- 持久化顺序节点
-  - -s
-
-- 临时顺序节点
-  - -es
-
-
-
-## 2. 下载
-
-[Apache ZooKeeper](https://zookeeper.apache.org/releases.html) 
-
-在**conf/zoo.cfg**中创建配置文件
+运行如下命令
 
 ```
-# ZooKeeper 使用的基本时间单位（以毫秒为单位）。它用于进行心跳，最小会话超时将是tickTime 的两倍。
-tickTime=2000
-# 存储内存数据库快照的位置，除非另有指定，否则存储数据库更新的事务日志。
-dataDir=/var/lib/zookeeper
-# 监听客户端连接的端口
-clientPort=2181
+# 启动可视化界面
+docker-compose -f docker-compose-ui-pseudo-cluster.yml up -d
+# 启动zk-kafka集群
+docker-compose -f docker-compose-SASL-pseudo-cluster.yml up -d
 ```
 
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_898989_QgZE7SlzBNBTJ6nZ_1689563873?w=1091&h=623&type=image/png)
 
 
-## **3.基本命令**
 
-### **服务端**
+可视化界面地址:127.0.0.1:80
 
-#### 1. 启动
-
-```
-./zkServer.sh start
-```
-
-#### 2. 停止
+根据如下图配置
 
 ```
-./zkServer.sh stop
+{
+  "security.protocol": "SASL_PLAINTEXT",
+  "sasl.mechanism": "SCRAM-SHA-256",
+  "sasl.jaas.config": "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"user\" password=\"password\";"
+}
 ```
 
-### **客户端**
-
-#### 1. 启动
-
-```
-./zkCli.sh -server 127.0.0.1:2181
-```
-
-#### 2. 查看当前节点的子节点
-
-```
-ls /
-```
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_813694_wEs_0Si9aNs5dRMy_1688541931?w=391&h=121&type=image/png)
-
-####  3. 创建节点
-
-```
-create /test jinhe
-```
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_962828_zwzVaE2wNB0GAHMc_1688542264?w=286&h=35&type=image/png)
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_744972_BjYGe9cEfccmAj1K_1689563553?w=1414&h=919&type=image/png)![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_717504_-j70QUMhJq8_t7M0_1689563672?w=1410&h=823&type=image/png)
 
 
 
-#### 4. 操作节点
+## 2、微服务启动
 
--  获取节点
+示例项目中的provider、consumer暂时没有特定的含义
 
-  ```
-  get /test
-  ```
+provider中定义了zk监听器，因此先运行
 
--  修改节点
+consumer可视作陆续部署的微服务，后运行
 
-  ```
-  set /test jinhetech
-  ```
+### 2.1 运行Provider
 
-- 删除节点
-
-  ```
-  delete /test
-  ```
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_750604_Id_qdXL-Nxl-VeIq_1688542370?w=394&h=186&type=image/png)
-
-
-
-
-
-## 4. 集群部署
-
-- 部署3个节点
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_552962_Kg_QO35BmDRhyXlw_1688547477?w=739&h=347&type=image/png)
-
-- 修改zoo.cfg
-
-修改对应的dataDir和clientPort
-
-dataDir=.../zookeeper-2/data
-
-clientPort=2182
-
-
-
-dataDir=.../zookeeper-3/data
-
-clientPort=2183
+- 添加VM参数
+-  JVM参数中的conf文件包含了zk-kafka使用SASL协议的账户密码
 
 ```
-tickTime=2000
-initLimit=10
-syncLimit=5
-dataDir=/Users/huangminzhi/Desktop/zookeeper-cluster/zookeeper-1/data
-clientPort=2181
-server.1=127.0.0.1:2881:3881
-server.2=127.0.0.1:2882:3882
-server.3=127.0.0.1:2883:3883
+-Djava.security.auth.login.config=provider/src/main/resources/jaas.conf
 ```
 
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_917592_2XVLIKtVoxqk7S1S_1689564003?w=1043&h=667&type=image/png)
 
 
-查看节点状态
+
+### 2.2 运行Consumer
+
+- 添加JVM参数
+
+- 若干个微服务，需要设置不同的端口与名称
 
 ```
-./zkServer.sh status
+-Dserver.port=4001
+-Dspring.application.name=consumer1
+-Djava.security.auth.login.config=consumer/src/main/resources/jaas.conf
 ```
 
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_325122_4R23exZBYnN6zS-x_1688547708?w=563&h=138&type=image/png)
+```
+-Dserver.port=4002
+-Dspring.application.name=consumer2
+-Djava.security.auth.login.config=consumer/src/main/resources/jaas.conf
+```
 
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_354725_8BACVuqxkL3aGwhH_1688547773?w=558&h=102&type=image/png)
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_739685_BCjELNw2TzCt0CaI_1689564269?w=1007&h=312&type=image/png)
+
+
+
+## 3、zookeeper 测试
+
+- 启动ProviderApplication, ConsumerApplication1, ConsumerApplication2
+
+因使用的know streaming框架Zookeeper似乎存在bug，先使用命令行观察zk。
+
+```
+docker exec -it zookeeper1 /bin/bash
+cd opt/bitnami/zookeeper/bin ; ./zkCli.sh -server 127.0.0.1
+```
+
+provder、consumer1、consumer2成功注册
+
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_736006_Fp1v3VnXFKPr2YJC_1689564595?w=1135&h=143&type=image/png)
+
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_351547_7jzaFneO8Xs5ZqNK_1689564717?w=805&h=159&type=image/png)
+
+-  停止ConsumerApplication2
+
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_318963_mG4jCxLivojNF1_U_1689564897?w=305&h=44&type=image/png)
+
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_835961__iWJrKvEPm3VvK19_1689564906?w=850&h=51&type=image/png)
+
+
+
+## 4、kafka 测试
+
+测试接口
+
+localhost:4000/send
+
+![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_604435_vDYn8HQ0hxVTxFaB_1689565088?w=1719&h=810&type=image/png)
+
+参考：
+
+1. https://hub.docker.com/r/bitnami/zookeeper
+2.  https://hub.docker.com/r/bitnami/kafka
+3.  https://docs.spring.io/spring-cloud-zookeeper/docs/current/reference/html/#_spring_cloud_zookeeper
+4.  https://zookeeper.apache.org/doc/r3.7.0/zookeeperProgrammers.html#sc_zkDataModel_znodes
+5.  [Client-Server mutual authentication - Apache ZooKeeper - Apache Software Foundation](https://cwiki.apache.org/confluence/display/ZOOKEEPER/Client-Server+mutual+authentication)
+6. https://doc.knowstreaming.com/product/1-brief-introduction
+

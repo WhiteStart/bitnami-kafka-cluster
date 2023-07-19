@@ -1,17 +1,67 @@
 version: '3'
 
 networks:
-  shared_network:
-    name: shared_network
-    driver: bridge
+  zk-kafka:
+    external:
+      name: zk-kafka
 
 services:
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    container_name: zookeeper
+    ports:
+      - '2181:2181'
+    volumes:
+      - 'zookeeper_data:/bitnami'
+    environment:
+      - ZOO_ENABLE_AUTH=yes
+      - ZOO_SERVER_USERS=user
+      - ZOO_SERVER_PASSWORDS=password
+      - ZOO_CLIENT_USER=user
+      - ZOO_CLIENT_PASSWORD=password
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.4
+    container_name: kafka
+    ports:
+      - '9092:9092'
+      - '9094:9094'
+    volumes:
+      - 'kafka_data:/bitnami'
+    environment:
+      - BITNAMI_DEBUG=yes
+      - KAFKA_ENABLE_KRAFT=no
+
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ZOOKEEPER_PROTOCOL=SASL
+      - KAFKA_ZOOKEEPER_USER=user
+      - KAFKA_ZOOKEEPER_PASSWORD=password
+
+      - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
+
+      - KAFKA_CLIENT_USERS=user
+      - KAFKA_CLIENT_PASSWORDS=password
+      - KAFKA_INTER_BROKER_USER=user
+      - KAFKA_INTER_BROKER_PASSWORD=password
+
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      # - KAFKA_CFG_SECURITY_INTER_BROKER_PROTOCOL=SASL_PLAINTEXT
+
+      # Configure ACL
+      - KAFKA_CFG_AUTHORIZER_CLASS_NAME=kafka.security.authorizer.AclAuthorizer
+      - KAFKA_CFG_SUPER_USERS=User:user
+
+    depends_on:
+      - zookeeper
+
   # *不要调整knowstreaming-manager服务名称，ui中会用到
   knowstreaming-manager:
     image: knowstreaming/knowstreaming-manager:0.7.0
     container_name: knowstreaming-manager
-    networks:
-      - shared_network
     privileged: true
     restart: always
     depends_on:
@@ -42,12 +92,9 @@ services:
   # 服务日志路径
   #    volumes:
   #      - /ks/manage/log:/logs
-
   knowstreaming-ui:
     image: knowstreaming/knowstreaming-ui:0.7.0
     container_name: knowstreaming-ui
-    networks:
-      - shared_network
     restart: always
     ports:
       - '80:80'
@@ -57,12 +104,9 @@ services:
       - knowstreaming-manager
   #    extra_hosts:
   #      - "hostname:x.x.x.x"
-
   elasticsearch-single:
     image: docker.io/library/elasticsearch:7.6.2
     container_name: elasticsearch-single
-    networks:
-      - shared_network
     restart: always
     expose:
       - 9200
@@ -85,8 +129,6 @@ services:
   knowstreaming-init:
     image: knowstreaming/knowstreaming-manager:0.7.0
     container_name: knowstreaming-init
-    networks:
-      - shared_network
     depends_on:
       - elasticsearch-single
     command:
@@ -100,8 +142,6 @@ services:
   knowstreaming-mysql:
     image: knowstreaming/knowstreaming-mysql:0.7.0
     container_name: knowstreaming-mysql
-    networks:
-      - shared_network
     restart: always
     environment:
       TZ: Asia/Shanghai
@@ -118,3 +158,9 @@ services:
 # 数据持久化路径
 #    volumes:
 #      - /ks/mysql/data:/data/mysql
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
