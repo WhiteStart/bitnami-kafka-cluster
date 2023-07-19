@@ -20,7 +20,7 @@ services:
         constraints:
           - node.labels.role == master
     environment:
-      - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+      - ZOO_SERVERS=0.0.0.0:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
       - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=user
       - ZOO_SERVER_PASSWORDS=password
