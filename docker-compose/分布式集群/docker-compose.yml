@@ -11,6 +11,8 @@ services:
     hostname: zookeeper1
     ports:
       - '2181:2181'
+      - '2888:2888'
+      - '3888:3888'
     volumes:
       - 'zookeeper1_data:/bitnami'
     deploy:
@@ -36,6 +38,8 @@ services:
     hostname: zookeeper2
     ports:
       - '2182:2181'
+      - '2889:2888'
+      - '3889:3888'
     volumes:
       - 'zookeeper2_data:/bitnami'
     deploy:
@@ -55,12 +59,14 @@ services:
       - quorumListenOnAllIPs=true
     networks:
       - zookeeper-kafka
-      
+
   zookeeper3:
     image: docker.io/bitnami/zookeeper:3.8
     hostname: zookeeper3
     ports:
       - '2183:2181'
+      - '2890:2888'
+      - '3890:3888'
     volumes:
       - 'zookeeper3_data:/bitnami'
     deploy:
@@ -88,7 +94,7 @@ services:
       - '9093:9093'
       - '9094:9094'
     volumes:
-      - 'kafka3_data:/bitnami'
+      - 'kafka1_data:/bitnami'
     deploy:
       mode: replicated
       replicas: 1
@@ -109,6 +115,7 @@ services:
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      # 使用springboot远程访问时将EXTERNAL改为远程服务器部署的kafka地址，比如EXTERNAL://10.22.33.44:9094
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka1:9092,EXTERNAL://localhost:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
@@ -147,6 +154,7 @@ services:
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      # 使用springboot远程访问时将EXTERNAL改为远程服务器部署的kafka地址，比如EXTERNAL://10.22.33.44:9097
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka2:9092,EXTERNAL://localhost:9097
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
@@ -185,6 +193,7 @@ services:
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      # 使用springboot远程访问时将EXTERNAL改为远程服务器部署的kafka地址，比如EXTERNAL://10.22.33.44:9100
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka3:9092,EXTERNAL://localhost:9100
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
@@ -208,4 +217,3 @@ volumes:
     driver: local
   kafka3_data:
     driver: local
-
