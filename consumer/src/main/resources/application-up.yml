@@ -1,0 +1,52 @@
+##服务器端口号
+server:
+  port: 4001
+
+spring:
+  application:
+    name: consumer
+  datasource:
+    url: jdbc:mysql://localhost:3306/kafka?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: hmz990203
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    zookeeper:
+      connect-string: 10.22.191.78:2181,10.22.191.35:2182,10.22.191.138:2183
+      discovery:
+        register: true
+      enabled: true
+      properties:
+        authProvider:1: org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+        requireClientAuthScheme: sasl
+        jaasLoginRenew: 3600000
+
+  kafka:
+    bootstrap-servers: 10.22.191.78:9094,10.22.191.35:9097,10.22.191.138:9100
+    properties:
+      security:
+        protocol: SASL_PLAINTEXT
+      sasl:
+        mechanism: SCRAM-SHA-256
+    consumer:
+      # 默认消费者组
+      group-id: test
+      # earliest 从主题起始位置开始消费消息
+      # latest  从最新可用偏移量开始消费
+      auto-offset-reset: latest
+      max-poll-records: 4000
+      enable-auto-commit: false
+      auto-commit-interval: 1000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      # 手动调用Acknowledgment.acknowledge()后立刻提交
+      ack-mode: MANUAL_IMMEDIATE
+
+properties:
+  connect-string: 10.22.191.78:2181,10.22.191.35:2182,10.22.191.138:2183
+  sessionTimeout: 5000
+  connectionTimeout: 5000
+  registrationPath: /services
+  username: user
+  password: password

@@ -1,14 +1,17 @@
-##服务器端口号
 server:
-  port: 4002
+  port: 4000
 
 spring:
   application:
     name: provider
+  datasource:
+    url: jdbc:mysql://localhost:3306/kafka?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: hmz990203
+    driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     zookeeper:
-      # ***** 本地测试的ip，如果是服务器部署则需要改为服务器的ip
-      connect-string: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
+      connect-string: 10.22.191.78:2181,10.22.191.35:2182,10.22.191.138:2183
       enabled: true
       properties:
         authProvider:1: org.apache.zookeeper.server.auth.SASLAuthenticationProvider
@@ -16,8 +19,7 @@ spring:
         jaasLoginRenew: 3600000
 
   kafka:
-    # ***** 本地测试的ip，如果是服务器部署则需要改为服务器的ip
-    bootstrap-servers: 127.0.0.1:9094,127.0.0.1:9097,127.0.0.1:9100
+    bootstrap-servers: 10.22.191.78:9094,10.22.191.35:9097,10.22.191.138:9100
     properties:
       security:
         protocol: SASL_PLAINTEXT
@@ -30,43 +32,41 @@ spring:
       batch-size: 1000
       # 32MB的批处理缓冲区
       buffer-memory: 33554432
+      # 0 kafka-cluster 不需要收到任何 broker 消息就会返回ack给 producer，效率最高但容易丢失消息
+      # 1 多副本之间的 leader 已经收到消息，并写入本地log中，才会返回ack，性能与安全均衡
+      # -1 默认配置min.insync.replicas=2，此时需要 leader 和一个 follower 同步完成后才会返回，最安全但性能最差
       acks: 1
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    consumer:
-      # 默认消费者组
-      group-id: test
-      # 最早未被消费的offset
-      auto-offset-reset: earliest
-      # 批量一次最大拉取数据量
-      max-poll-records: 4000
-      # 是否自动提交
-      enable-auto-commit: true
-      # 自动提交时间间隔，单位ms
-      auto-commit-interval: 1000
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
+  #    consumer:
+  #      # 默认消费者组
+  #      group-id: test
+  #      # 最早未被消费的offset
+  #      auto-offset-reset: earliest
+  #      # 批量一次最大拉取数据量
+  #      max-poll-records: 4000
+  #      # 是否自动提交
+  #      enable-auto-commit: true
+  #      # 自动提交时间间隔，单位ms
+  #      auto-commit-interval: 1000
+  #      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  #      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   mail:
     host: smtp.qq.com
     port: 587
-    username: { your_email }
-    password: { email_password 这里使用的是qq邮箱，需要注册SMTP密码，其他的邮箱应该也是类似 }
+    username: { your email }
+    password: { your passowrd }
     properties:
       mail:
         smtp:
-          from: { your_email }
+          from: { your email }
 
 properties:
-  # ***** 本地测试的ip，如果是服务器部署则需要改为服务器的ip
-  connectString: 127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183
-    sessionTimeout: 5000
-    connectionTimeout: 5000
-    registrationPath: /services
-    to: { 期望发送的地址 }
-    username: user
-    password: password
-
-mail:
-  from: { your_email }
+  connect-string: 10.22.191.78:2181,10.22.191.35:2182,10.22.191.138:2183
+  sessionTimeout: 5000
+  connectionTimeout: 5000
+  registrationPath: /services
+  to: { your email }
+  username: user
+  password: password

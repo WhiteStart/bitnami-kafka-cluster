@@ -86,21 +86,21 @@ public class ZookeeperConfig {
                     String prePath = pre.getPath();
                     String curPath = cur.getPath();
                     log.info("-----更新节点,{}=>{}", prePath, curPath);
-                    mailSender.sendEmail(to, "更新节点",
-                            "旧节点:" + prePath + ",新节点:" + curPath);
+//                    mailSender.sendEmail(to, "更新节点",
+//                            "旧节点:" + prePath + ",新节点:" + curPath);
                 })
                 .forCreates((node) -> {
                     String path = node.getPath();
                     log.info("-----创建节点,{}", path);
                     if (!"/services".equals(path)) {
-                        mailSender.sendEmail(to, "创建节点", path);
+//                        mailSender.sendEmail(to, "创建节点", path);
                     }
                 })
                 .forDeletes((node) -> {
                     String path = node.getPath();
                     log.info("-----删除节点,{}", path);
                     if (!"/services".equals(path)) {
-                        mailSender.sendEmail(to, "删除节点", path);
+//                        mailSender.sendEmail(to, "删除节点", path);
                     }
                 })
                 .build();
