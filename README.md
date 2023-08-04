@@ -1,6 +1,6 @@
 # SpringCloud集成zookeeper与kafka
 
-SpinrgCloud 集成 zookeeper、kafka，采用 SASL 加密协议，集群部署
+Spring Cloud 集成 zookeeper、kafka，采用 SASL 加密协议，分布式集群部署
 
 # 一、准备工作
 

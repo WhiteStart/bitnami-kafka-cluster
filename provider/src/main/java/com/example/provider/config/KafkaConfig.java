@@ -14,13 +14,24 @@ public class KafkaConfig {
     @Bean
     public NewTopic myTopic() {
         return TopicBuilder.name("my-topic")
-                .partitions(1)
+                .partitions(6)
                 .replicas(1)
                 .build();
     }
 
-    @KafkaListener(topics = {"my-topic"})
-    public void consumer(String message){
-        log.info("收到数据:{}", message);
+    @Bean
+    public NewTopic topic1() {
+        return TopicBuilder.name("topic1")
+                .partitions(2)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic topic2() {
+        return TopicBuilder.name("topic2")
+                .partitions(1)
+                .replicas(1)
+                .build();
     }
 }
