@@ -8,7 +8,7 @@ services:
   # *不要调整knowstreaming-manager服务名称，ui中会用到
   knowstreaming-manager:
     image: knowstreaming/knowstreaming-manager:0.7.0
-    container_name: knowstreaming-manager
+    #    container_name: knowstreaming-manager
     networks:
       - zookeeper-kafka
     deploy:
@@ -17,8 +17,8 @@ services:
       placement:
         constraints:
           - node.labels.role == master
-    privileged: true
-    restart: always
+    #    privileged: true
+    #    restart: always
     depends_on:
       - elasticsearch-single
       - knowstreaming-mysql
@@ -36,21 +36,22 @@ services:
       # mysql用户名
       SERVER_MYSQL_USER: root
       # mysql用户密码
-      SERVER_MYSQL_PASSWORD: admin2022_
+      SERVER_MYSQL_PASSWORD: password
       # es服务地址
       SERVER_ES_ADDRESS: elasticsearch-single:9200
       # 服务JVM参数
-      JAVA_OPTS: -Xmx1g -Xms1g
+      JAVA_OPTS: -Xmx1g -Xms1g -Djava.security.auth.login.config=/usr/local/bin/jaas.conf
+
       # 对于kafka中ADVERTISED_LISTENERS填写的hostname可以通过该方式完成
-  #    extra_hosts:
-  #      - "hostname:x.x.x.x"
-  # 服务日志路径
-#    volumes:
-#      - /ks/manage/log:/logs
+    #    extra_hosts:
+    #      - "hostname:x.x.x.x"
+    # 服务日志路径
+    volumes:
+      - /var/lib/docker/volumes/ks/manage/log:/logs
 
   knowstreaming-ui:
     image: knowstreaming/knowstreaming-ui:0.7.0
-    container_name: knowstreaming-ui
+    #    container_name: knowstreaming-ui
     networks:
       - zookeeper-kafka
     deploy:
@@ -59,9 +60,9 @@ services:
       placement:
         constraints:
           - node.labels.role == master
-    restart: always
+    #    restart: always
     ports:
-      - '80:80'
+      - '82:80'
     environment:
       TZ: Asia/Shanghai
     depends_on:
@@ -71,7 +72,7 @@ services:
 
   elasticsearch-single:
     image: docker.io/library/elasticsearch:7.6.2
-    container_name: elasticsearch-single
+    #    container_name: elasticsearch-single
     networks:
       - zookeeper-kafka
     deploy:
@@ -80,28 +81,46 @@ services:
       placement:
         constraints:
           - node.labels.role == master
-    restart: always
-    expose:
-      - 9200
-      - 9300
-    #    ports:
-    #      - '9200:9200'
-    #      - '9300:9300'
+    #    restart: always
+    #    expose:
+    #      - 9200
+    #      - 9300
+    ports:
+      - '9200:9200'
+      - '9300:9300'
     environment:
       TZ: Asia/Shanghai
       # es的JVM参数
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      ES_JAVA_OPTS: -Xms1024m -Xmx1024m
       # 单节点配置，多节点集群参考 https://www.elastic.co/guide/en/elasticsearch/reference/7.6/docker.html#docker-compose-file
       discovery.type: single-node
       # 数据持久化路径
-#    volumes:
-#      - /ks/es/data:/usr/share/elasticsearch/data
+    volumes:
+      - /var/lib/docker/volumes/ks/es/data:/usr/share/elasticsearch/data
+
+  #  kibana:
+  #    image: kibana:7.6.2
+  ##    container_name: kibana
+  #    environment:
+  #      - ELASTICSEARCH_HOSTS=http://elasticsearch-single:9200
+  #    networks:
+  #      - zookeeper-kafka
+  #    deploy:
+  #      mode: replicated
+  #      replicas: 1
+  #      placement:
+  #        constraints:
+  #          - node.labels.role == master
+  #    ports:
+  #      - "5601:5601"
+  #    depends_on:
+  #      - elasticsearch-single
 
   # es初始化服务，与manager使用同一镜像
   # 首次启动es需初始化模版和索引,后续会自动创建
   knowstreaming-init:
     image: knowstreaming/knowstreaming-manager:0.7.0
-    container_name: knowstreaming-init
+    #    container_name: knowstreaming-init
     networks:
       - zookeeper-kafka
     deploy:
@@ -122,7 +141,7 @@ services:
 
   knowstreaming-mysql:
     image: knowstreaming/knowstreaming-mysql:0.7.0
-    container_name: knowstreaming-mysql
+    #    container_name: knowstreaming-mysql
     networks:
       - zookeeper-kafka
     deploy:
@@ -131,19 +150,18 @@ services:
       placement:
         constraints:
           - node.labels.role == master
-    restart: always
     environment:
       TZ: Asia/Shanghai
       # root 用户密码
-      MYSQL_ROOT_PASSWORD: admin2022_
+      MYSQL_ROOT_PASSWORD: password
       # 初始化时创建的数据库名称
       MYSQL_DATABASE: know_streaming
       # 通配所有host,可以访问远程
       MYSQL_ROOT_HOST: '%'
     expose:
       - 3306
-#    ports:
-#      - '3306:3306'
-# 数据持久化路径
-#    volumes:
-#      - /ks/mysql/data:/data/mysql
+    #    ports:
+    #      - '3306:3306'
+    # 数据持久化路径
+    volumes:
+      - /var/lib/docker/volumes/ks/mysql/data:/data/mysql
