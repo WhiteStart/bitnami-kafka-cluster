@@ -1,7 +1,9 @@
 package com.example.consumer.config;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.example.consumer.dataobject.Consumer;
 import com.example.consumer.mapper.ConsumerMapper;
+import io.netty.handler.codec.json.JsonObjectDecoder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +83,8 @@ public class KafkaConfig {
 
     private Consumer fill(ConsumerRecord<String, String> record) {
         Consumer consumer = new Consumer();
+        JSONObject jsonObject = JSONObject.parseObject(record.value());
+        consumer.setTaskId(jsonObject.getString("index"));
         consumer.setData(record.value());
         consumer.setTopic(record.topic());
         consumer.setUsed_partition(record.partition());

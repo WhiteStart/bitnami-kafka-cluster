@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 public class Consumer {
     @TableId(type = IdType.AUTO)
     private Integer id;
+    private String taskId;
     private String data;
     private String topic;
     private Integer used_partition;
@@ -23,7 +24,7 @@ public class Consumer {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp modifiedTime;
 
-    @TableField(value = "gmt_create")
+    @TableField(value = "gmt_created")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp createTime;
 }

@@ -40,7 +40,7 @@ public class ProviderController {
                 Map<String, String> map = new HashMap<>();
                 map.put("name", String.valueOf(j * j));
                 map.put("age", String.valueOf(j * 2));
-                map.put("index", String.valueOf(j));
+                map.put("index", "jinhe_" + j);
                 map.put("code", "gagadgagegaegaegaegaegegtwoqriqwriqnwruioqcwnrioqnwcriqwcoqrcnqoiwrunqocwr:" + j);
                 ListenableFuture<SendResult<String, Object>> send = kafkaTemplate.send("my-topic", JSONObject.toJSONString(map));
                 send.addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {

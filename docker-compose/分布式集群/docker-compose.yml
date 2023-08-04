@@ -7,14 +7,16 @@ networks:
 
 services:
   zookeeper1:
-    image: docker.io/bitnami/zookeeper:3.8
+    image: bitnami/zookeeper:3.8
     hostname: zookeeper1
     ports:
       - '2181:2181'
       - '2888:2888'
       - '3888:3888'
+      - "9585:9585"  # JMX端口，可以根据需要自行设置
     volumes:
       - 'zookeeper1_data:/bitnami'
+    #      - '/usr/local/bin/zookeeper-kafka/zoo.cfg:/opt/bitnami/zookeeper/conf/zoo.cfg'
     deploy:
       mode: replicated
       replicas: 1
@@ -23,6 +25,7 @@ services:
           - node.labels.role == master
     environment:
       - ZOO_SERVERS=0.0.0.0:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+      #      - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=user
       - ZOO_SERVER_PASSWORDS=password
@@ -30,11 +33,14 @@ services:
       - ZOO_CLIENT_PASSWORD=password
       - ZOO_SERVER_ID=1
       - quorumListenOnAllIPs=true
+      #      - ZOO_TICK_TIME=5000
+      - ZOO_HEAP_SIZE=2048
+    #      - ZOO_LOG_LEVEL=debug
     networks:
       - zookeeper-kafka
 
   zookeeper2:
-    image: docker.io/bitnami/zookeeper:3.8
+    image: bitnami/zookeeper:3.8
     hostname: zookeeper2
     ports:
       - '2182:2181'
@@ -42,6 +48,7 @@ services:
       - '3889:3888'
     volumes:
       - 'zookeeper2_data:/bitnami'
+    #      - '/usr/local/bin/zookeeper-kafka/zoo.cfg:/opt/bitnami/zookeeper/conf/zoo.cfg'
     deploy:
       mode: replicated
       replicas: 1
@@ -50,6 +57,7 @@ services:
           - node.labels.role == node01
     environment:
       - ZOO_SERVERS=zookeeper1:2888:3888;0.0.0.0:2888:3888;zookeeper3:2888:3888
+      #      - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=user
       - ZOO_SERVER_PASSWORDS=password
@@ -57,11 +65,14 @@ services:
       - ZOO_CLIENT_PASSWORD=password
       - ZOO_SERVER_ID=2
       - quorumListenOnAllIPs=true
+      #      - ZOO_TICK_TIME=5000
+      - ZOO_HEAP_SIZE=2048
+    #      - ZOO_LOG_LEVEL=debug
     networks:
       - zookeeper-kafka
 
   zookeeper3:
-    image: docker.io/bitnami/zookeeper:3.8
+    image: bitnami/zookeeper:3.8
     hostname: zookeeper3
     ports:
       - '2183:2181'
@@ -69,6 +80,7 @@ services:
       - '3890:3888'
     volumes:
       - 'zookeeper3_data:/bitnami'
+    #      - '/usr/local/bin/zookeeper-kafka/zoo.cfg:/opt/bitnami/zookeeper/conf/zoo.cfg'
     deploy:
       mode: replicated
       replicas: 1
@@ -77,6 +89,7 @@ services:
           - node.labels.role == node02
     environment:
       - ZOO_SERVERS=zookeeper1:2888:3888;zookeeper2:2888:3888;0.0.0.0:2888:3888
+      #      - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=user
       - ZOO_SERVER_PASSWORDS=password
@@ -84,15 +97,19 @@ services:
       - ZOO_CLIENT_PASSWORD=password
       - ZOO_SERVER_ID=3
       - quorumListenOnAllIPs=true
+      #      - ZOO_TICK_TIME=5000
+      - ZOO_HEAP_SIZE=2048
+    #      - ZOO_LOG_LEVEL=debug
     networks:
       - zookeeper-kafka
 
   kafka1:
-    image: docker.io/bitnami/kafka:3.4
+    image: bitnami/kafka:3.4.1-debian-11-r49
     ports:
       - '9092:9092'
       - '9093:9093'
       - '9094:9094'
+      - "9996:9996"  # JMX端口，可以根据需要自行设置
     volumes:
       - 'kafka1_data:/bitnami'
     deploy:
@@ -110,15 +127,19 @@ services:
       - KAFKA_ZOOKEEPER_PASSWORD=password
       - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
       - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL=PLAIN
       - KAFKA_CLIENT_USERS=user
       - KAFKA_CLIENT_PASSWORDS=password
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
+      - KAFKA_CONTROLLER_USER=user
+      - KAFKA_CONTROLLER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      # 使用springboot远程访问时将EXTERNAL改为远程服务器部署的kafka地址，比如EXTERNAL://10.22.33.44:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka1:9092,EXTERNAL://localhost:9094
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka1:9092,EXTERNAL://10.22.191.78:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - JMX_PORT=9996  # 设置JMX端口,9997为压测端口
+      - KAFKA_JMX_OPTS=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9996 -Djava.rmi.server.hostname=10.22.191.78 -Djava.net.preferIPv4Stack=true
     networks:
       - zookeeper-kafka
     depends_on:
@@ -127,11 +148,12 @@ services:
       - zookeeper3
 
   kafka2:
-    image: docker.io/bitnami/kafka:3.4
+    image: bitnami/kafka:3.4.1-debian-11-r49
     ports:
       - '9095:9092'
       - '9096:9093'
       - '9097:9094'
+      - '9998:9998'
     volumes:
       - 'kafka2_data:/bitnami'
     deploy:
@@ -149,15 +171,20 @@ services:
       - KAFKA_ZOOKEEPER_PASSWORD=password
       - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
       - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL=PLAIN
       - KAFKA_CLIENT_USERS=user
       - KAFKA_CLIENT_PASSWORDS=password
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
+      - KAFKA_CONTROLLER_USER=user
+      - KAFKA_CONTROLLER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      # 使用springboot远程访问时将EXTERNAL改为远程服务器部署的kafka地址，比如EXTERNAL://10.22.33.44:9097
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka2:9092,EXTERNAL://localhost:9097
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka2:9092,EXTERNAL://10.22.191.35:9097
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - JMX_PORT=9998  # 设置JMX端口
+      - KAFKA_JMX_OPTS=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9998 -Djava.rmi.server.hostname=10.22.191.35 -Djava.net.preferIPv4Stack=true
+    #      - JVM_OPTS=-Djute.maxbuffer=10485760
     networks:
       - zookeeper-kafka
     depends_on:
@@ -166,11 +193,12 @@ services:
       - zookeeper3
 
   kafka3:
-    image: docker.io/bitnami/kafka:3.4
+    image: bitnami/kafka:3.4.1-debian-11-r49
     ports:
       - '9098:9092'
       - '9099:9093'
       - '9100:9094'
+      - '9999:9999'
     volumes:
       - 'kafka3_data:/bitnami'
     deploy:
@@ -188,15 +216,20 @@ services:
       - KAFKA_ZOOKEEPER_PASSWORD=password
       - KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-256
       - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256
+      - KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL=PLAIN
       - KAFKA_CLIENT_USERS=user
       - KAFKA_CLIENT_PASSWORDS=password
       - KAFKA_INTER_BROKER_USER=user
       - KAFKA_INTER_BROKER_PASSWORD=password
+      - KAFKA_CONTROLLER_USER=user
+      - KAFKA_CONTROLLER_PASSWORD=password
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      # 使用springboot远程访问时将EXTERNAL改为远程服务器部署的kafka地址，比如EXTERNAL://10.22.33.44:9100
-      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka3:9092,EXTERNAL://localhost:9100
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka3:9092,EXTERNAL://10.22.191.138:9100
+      #      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - JMX_PORT=9999  # 设置JMX端口
+      - KAFKA_JMX_OPTS=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9999 -Djava.rmi.server.hostname=10.22.191.138 -Djava.net.preferIPv4Stack=true
     networks:
       - zookeeper-kafka
     depends_on:

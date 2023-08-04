@@ -36,7 +36,7 @@ services:
       # mysql用户名
       SERVER_MYSQL_USER: root
       # mysql用户密码
-      SERVER_MYSQL_PASSWORD: TSLE%2rf
+      SERVER_MYSQL_PASSWORD: password
       # es服务地址
       SERVER_ES_ADDRESS: elasticsearch-single:9200
       # 服务JVM参数
@@ -153,7 +153,7 @@ services:
     environment:
       TZ: Asia/Shanghai
       # root 用户密码
-      MYSQL_ROOT_PASSWORD: TSLE%2rf
+      MYSQL_ROOT_PASSWORD: password
       # 初始化时创建的数据库名称
       MYSQL_DATABASE: know_streaming
       # 通配所有host,可以访问远程
