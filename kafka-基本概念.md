@@ -17,7 +17,7 @@
   - 解决统一存储文件过大的问题
   - 提高了吞吐量，读写均可以同时在多个分区进行
 
-![截屏2023-07-30 下午6.26.32](/Users/huangminzhi/Library/Application Support/typora-user-images/截屏2023-07-30 下午6.26.32.png)
+![截屏2023-08-11 下午2.03.03](/Users/huangminzhi/Library/Application Support/typora-user-images/截屏2023-08-11 下午2.03.03.png)
 
 
 
@@ -35,24 +35,7 @@ replicas 为主题中的分区创建多个备份【实现高可用】，多个�
   - 可以同步和已经同步的节点会被存入到 isr 集合中
   - 如果某节点性能较差，会被【踢出】集合
 
-![截屏2023-07-30 下午7.32.54](/Users/huangminzhi/Library/Application Support/typora-user-images/截屏2023-07-30 下午7.32.54.png)
-
-
-
-
-
-## 集群消费
-
-- 同一个消费组中，一个partition只能被一个consumer消费
-  - 保证消费的顺序
-  - kafka只在partition范围内保证消费的局部顺序性
-
-- partition 的数量决定了消费组中消费者的数量
-  - 建议同一个消费组中的消费者数量不要超过 partition 数量
-  - 超过了会有 consumer 消费不到消息
-- 如果 consumer 挂了，触发 rebalance 机制，让其他 consumer来消费该分区
-
-![截屏2023-07-30 下午8.20.19](/Users/huangminzhi/Library/Application Support/typora-user-images/截屏2023-07-30 下午8.20.19.png)
+![截屏2023-08-11 下午2.02.35](/Users/huangminzhi/Library/Application Support/typora-user-images/截屏2023-08-11 下午2.02.35.png)
 
 
 
@@ -69,7 +52,7 @@ replicas 为主题中的分区创建多个备份【实现高可用】，多个�
 
 ### 自动提交
 
-- 消息 poll 下来以后，直接提交 offset【如果此时cosumer挂了，可能会导致消息丢失】
+- 直接提交 offset【如果此时cosumer挂了，可能会导致消息丢失】
 
 ```yml
 # 是否自动提交
@@ -112,7 +95,7 @@ Kafka集群中的broker在zk中创建临时序号节点，序号最小的节点�
 
 前提：消费者没有指明分区消费。当消费组里的消费者和分区的关系发生变化时，触发 Rebalance
 
-重新吊证消费者消费哪个分区
+重新调整消费者消费哪个分区
 
 在触发Rebalance之前，消费者消费哪个分区有三种策略
 
@@ -123,6 +106,21 @@ Kafka集群中的broker在zk中创建临时序号节点，序号最小的节点�
 - sticky（粘合策略）：
   - 如果需要Rebalance，在原分区不变的基础上进行调整
   - 如果没有开启该策略，全部重新分配【影响性能】
+
+
+
+## 集群消费
+
+- 同一个消费组中，一个partition只能被一个consumer消费
+  - 保证消费的顺序
+  - kafka只在partition范围内保证消费的局部顺序性
+
+- partition 的数量决定了消费组中消费者的数量
+  - 建议同一个消费组中的消费者数量不要超过 partition 数量
+  - 超过了会有 consumer 消费不到消息
+- 如果 consumer 挂了，触发 rebalance 机制，让其他 consumer来消费该分区
+
+![截屏2023-08-11 下午2.03.12](/Users/huangminzhi/Library/Application Support/typora-user-images/截屏2023-08-11 下午2.03.12.png)
 
 
 
@@ -148,13 +146,7 @@ HW是已完成同步的位置。消息在写入broker时，且每个broker完成
 @GetMapping("/sendAsync")
 public void sendAsync(){
     for (int i = 0; i < 10; i++) {
-      Map<String, Object> map = new LinkedHashMap<>();
-      map.put("datekey", 20210610);
-      map.put("userid", i);
-      map.put("salaryAmount", i);
-      try {
-        Thread.sleep(1);
-        kafkaTemplate.send("my-topic", JSONObject.toJSONString(map));
+        kafkaTemplate.send("my-topic", JSONObject.toJSONString(i));
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -168,10 +160,6 @@ public void sendAsync(){
                 Thread.sleep(1);
                 // 加上 get 后变为同步发送
                 SendResult<String, Object> result = kafkaTemplate.send("single-xiotpull-NK", JSONObject.toJSONString("消息测试")).get();
-                System.out.println("stringObjectSendResult.getRecordMetadata().topic() = " + result.getRecordMetadata().topic());
-                System.out.println("result.getRecordMetadata().partition() = " + result.getRecordMetadata().partition());
-                System.out.println("result.getRecordMetadata().offset() = " + result.getRecordMetadata().offset());
-                System.out.println("------------------------");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -185,8 +173,6 @@ public void sendAsync(){
 @KafkaListener(topics = {"my-topic"}, groupId = "test")
 public void consumer(ConsumerRecord<String, String> record, Acknowledgment ack){
     String value = record.value();
-    log.info(record);
-    log.info(value);
     ack.acknowledge();
 }
 ```
@@ -225,7 +211,7 @@ public void consumer(ConsumerRecord<String, String> record, Acknowledgment ack){
 ## 3.如何保证消息的顺序性
 
 - 生产者
-  - 保证消息按照顺序消费，且消息不丢失【即使用同步发送，且ack不为0】
+  - 保证消息按照顺序发送，且消息不丢失【即使用同步发送，且ack不为0】
 - 消费者
   - topic 只能设置一个分区，消费组中只能有一个消费者
 

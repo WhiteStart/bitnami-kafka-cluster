@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.scheduling.annotation.Async;
 
 
 @Configuration
@@ -21,9 +22,7 @@ public class KafkaConfig {
     private ConsumerMapper consumerMapper;
 
     // 逐条操作
-    @KafkaListener(topicPartitions = {
-            @TopicPartition(topic = "my-topic", partitions = {"0","1","2"})
-    }, groupId = "test", concurrency = "6")
+    @KafkaListener(topics = "my-topic", concurrency = "12")
     public void consumer(ConsumerRecord<String, String> record, Acknowledgment ack){
         Consumer consumer = fill(record);
         consumerMapper.insert(consumer);
@@ -31,9 +30,7 @@ public class KafkaConfig {
         ack.acknowledge();
     }
 
-    @KafkaListener(topicPartitions = {
-            @TopicPartition(topic = "my-topic", partitions = {"3","4","5"})
-    }, groupId = "test2", concurrency = "6")
+    @KafkaListener(topics = "my-topic", concurrency = "12")
     public void consumer2(ConsumerRecord<String, String> record, Acknowledgment ack){
         Consumer consumer = fill(record);
         consumerMapper.insert(consumer);
@@ -41,45 +38,13 @@ public class KafkaConfig {
         ack.acknowledge();
     }
 
-//    @KafkaListener(topicPartitions = {
-//            @TopicPartition(topic = "my-topic", partitions = {"2"})
-//    }, groupId = "test3", concurrency = "6")
-//    public void consumer3(ConsumerRecord<String, String> record, Acknowledgment ack){
-//        Consumer consumer = fill(record);
-//        consumerMapper.insert(consumer);
-//        // 手动提交 offset
-//        ack.acknowledge();
-//    }
-//
-//    @KafkaListener(topicPartitions = {
-//            @TopicPartition(topic = "my-topic", partitions = {"3"})
-//    }, groupId = "test4", concurrency = "6")
-//    public void consumer4(ConsumerRecord<String, String> record, Acknowledgment ack){
-//        Consumer consumer = fill(record);
-//        consumerMapper.insert(consumer);
-//        // 手动提交 offset
-//        ack.acknowledge();
-//    }
-//
-//    @KafkaListener(topicPartitions = {
-//            @TopicPartition(topic = "my-topic", partitions = {"4"})
-//    }, groupId = "test5", concurrency = "6")
-//    public void consumer5(ConsumerRecord<String, String> record, Acknowledgment ack){
-//        Consumer consumer = fill(record);
-//        consumerMapper.insert(consumer);
-//        // 手动提交 offset
-//        ack.acknowledge();
-//    }
-//
-//    @KafkaListener(topicPartitions = {
-//            @TopicPartition(topic = "my-topic", partitions = {"5"})
-//    }, groupId = "test6", concurrency = "6")
-//    public void consumer6(ConsumerRecord<String, String> record, Acknowledgment ack){
-//        Consumer consumer = fill(record);
-//        consumerMapper.insert(consumer);
-//        // 手动提交 offset
-//        ack.acknowledge();
-//    }
+    @KafkaListener(topics = "my-topic", concurrency = "12")
+    public void consumer3(ConsumerRecord<String, String> record, Acknowledgment ack){
+        Consumer consumer = fill(record);
+        consumerMapper.insert(consumer);
+        // 手动提交 offset
+        ack.acknowledge();
+    }
 
     private Consumer fill(ConsumerRecord<String, String> record) {
         Consumer consumer = new Consumer();
@@ -100,19 +65,5 @@ public class KafkaConfig {
 //    public void consumer(ConsumerRecords<String, String> records, Acknowledgment ack){
 //
 //    }
-
-//    @KafkaListener(groupId = "test",
-//    topicPartitions = {
-//            @TopicPartition(topic = "topic1", partitions = {"0","1","2"}),
-//            @TopicPartition(topic = "topic1", partitions = {"3","4","5"}),
-////                    partitionOffsets = @PartitionOffset(partition = "1", initialOffset = "100")),
-//    }, concurrency = "3") //  同组下的消费者个数
-//    public void consumer2(ConsumerRecord<String, String> record, Acknowledgment ack){
-//        String value = record.value();
-//        log.info(record);
-//        log.info(value);
-//        ack.acknowledge();
-//    }
-
 
 }
