@@ -22,7 +22,7 @@ public class KafkaConfig {
     private ConsumerMapper consumerMapper;
 
     // 逐条操作
-    @KafkaListener(topics = "my-topic", concurrency = "12")
+    @KafkaListener(topics = "topic-2", concurrency = "3")
     public void consumer(ConsumerRecord<String, String> record, Acknowledgment ack){
         Consumer consumer = fill(record);
         consumerMapper.insert(consumer);
@@ -30,21 +30,22 @@ public class KafkaConfig {
         ack.acknowledge();
     }
 
-    @KafkaListener(topics = "my-topic", concurrency = "12")
-    public void consumer2(ConsumerRecord<String, String> record, Acknowledgment ack){
-        Consumer consumer = fill(record);
-        consumerMapper.insert(consumer);
-        // 手动提交 offset
-        ack.acknowledge();
-    }
 
-    @KafkaListener(topics = "my-topic", concurrency = "12")
-    public void consumer3(ConsumerRecord<String, String> record, Acknowledgment ack){
-        Consumer consumer = fill(record);
-        consumerMapper.insert(consumer);
-        // 手动提交 offset
-        ack.acknowledge();
-    }
+//    @KafkaListener(topics = "my-topic", concurrency = "12")
+//    public void consumer2(ConsumerRecord<String, String> record, Acknowledgment ack){
+//        Consumer consumer = fill(record);
+//        consumerMapper.insert(consumer);
+//        // 手动提交 offset
+//        ack.acknowledge();
+//    }
+//
+//    @KafkaListener(topics = "my-topic", concurrency = "12")
+//    public void consumer3(ConsumerRecord<String, String> record, Acknowledgment ack){
+//        Consumer consumer = fill(record);
+//        consumerMapper.insert(consumer);
+//        // 手动提交 offset
+//        ack.acknowledge();
+//    }
 
     private Consumer fill(ConsumerRecord<String, String> record) {
         Consumer consumer = new Consumer();
@@ -52,7 +53,7 @@ public class KafkaConfig {
         consumer.setTaskId(jsonObject.getString("index"));
         consumer.setData(record.value());
         consumer.setTopic(record.topic());
-        consumer.setUsed_partition(record.partition());
+        consumer.setUsedPartition(record.partition());
         consumer.setOffset(String.valueOf(record.offset()));
         consumer.setTime(String.valueOf(record.timestamp()));
         consumer.setKey(record.key());

@@ -114,6 +114,48 @@ docker swarm leave --force
 
 
 
+在三台机器上暴露端口供grafana监控
+
+- --kafka.server=kafka1:9092
+- --kafka.server=kafka2:9092
+- --kafka.server=kafka3:9092
+
+```bash
+docker run -d --name kafka-exporter1 --network zookeeper-kafka -p 9308:9308 docker.io/bitnami/kafka-exporter --kafka.server=kafka1:9092 --kafka.version=3.4.1 --sasl.enabled --sasl.username=user --sasl.password=GiAszivMBB --sasl.mechanism=scram-sha256
+```
+
+
+
+debug命令参考
+
+- 集群中服务未正常启动时debug
+
+```bash
+# 查看swarm集群中的容器信息
+docker service ls
+# 查看某个特定容器的信息，
+docker service ps {id}
+```
+
+-  集群重启
+
+```bash
+# 查看所有 stack 【stack表示由多个服务组成的一个应用程序】
+docker stack ls
+# 删除 zookeeper-kafka 这一 overlay 中的所有容器
+docker stack rm zookeeper-kafka
+# 删除完后再使用docker stack deploy -c 部署，不用再加入 swarm 
+```
+
+-  离开集群网络
+
+```bash
+# 离开swarm集群
+docker swarm leave --force
+```
+
+
+
 # **三、UI 使用及 SpringCloud 测试**
 
 可视化界面地址 => ip:80
@@ -133,12 +175,6 @@ docker swarm leave --force
 
 
 ## 1、微服务启动
-
-示例项目中的provider、consumer暂时没有特定的含义
-
-provider中定义了zk监听器，因此先运行
-
-consumer可视作陆续部署的微服务，后运行
 
 ### 1.1 运行Provider
 
@@ -173,41 +209,6 @@ consumer可视作陆续部署的微服务，后运行
 ```
 
 ![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_739685_BCjELNw2TzCt0CaI_1689564269?w=1007&h=312&type=image/png)
-
-
-
-## 2、zookeeper 测试
-
-- 启动ProviderApplication, ConsumerApplication1, ConsumerApplication2
-
-因使用的know streaming框架Zookeeper没有配置ACL入口，先使用命令行观察zk。
-
-```
-docker exec -it zookeeper1 /bin/bash
-cd opt/bitnami/zookeeper/bin ; ./zkCli.sh -server 127.0.0.1
-```
-
-provder、consumer1、consumer2成功注册
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_736006_Fp1v3VnXFKPr2YJC_1689564595?w=1135&h=143&type=image/png)
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_351547_7jzaFneO8Xs5ZqNK_1689564717?w=805&h=159&type=image/png)
-
-- 停止ConsumerApplication2
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_318963_mG4jCxLivojNF1_U_1689564897?w=305&h=44&type=image/png)
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_835961__iWJrKvEPm3VvK19_1689564906?w=850&h=51&type=image/png)
-
-
-
-## 3、kafka 测试
-
-测试接口
-
-localhost:4000/send
-
-![img](https://wdcdn.qpic.cn/MTY4ODg1NTczNDQ5MjQ2Mw_604435_vDYn8HQ0hxVTxFaB_1689565088?w=1719&h=810&type=image/png)
 
 
 

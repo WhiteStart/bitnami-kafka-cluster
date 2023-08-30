@@ -5,12 +5,12 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data
-public class Provider {
+public class Producer {
     @TableId(type = IdType.AUTO)
     private Integer id;
     private String data;
     private String topic;
-    private Integer used_partition;
+    private Integer usedPartition;
     private String offset;
-    private String timestamp;
+    private String time;
 }

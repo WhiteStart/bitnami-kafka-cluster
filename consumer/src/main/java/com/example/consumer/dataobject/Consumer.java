@@ -15,7 +15,7 @@ public class Consumer {
     private String taskId;
     private String data;
     private String topic;
-    private Integer used_partition;
+    private Integer usedPartition;
     private String offset;
     private String time;
     private String key;
